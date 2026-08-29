@@ -1,0 +1,55 @@
+schema_version: 1
+name: delayed_odometry_stop
+
+system:
+  input_topic: /odom_raw
+  output_topic: /odom
+  message_type: nav_msgs/msg/Odometry
+  command_topic: /cmd_vel
+  robot:
+    publish_rate_hz: 20.0
+    initial_linear_velocity_mps: 0.5
+    initial_angular_velocity_rad_s: 0.0
+
+experiment:
+  seed: 7
+  readiness_timeout_sec: 10.0
+  healthy_baseline_sec: 2.0
+  observation_after_activation_sec: 4.0
+
+fault:
+  type: latency
+  parameters:
+    delay_sec: 0.5
+    jitter_sec: 0.0
+  duration_sec: 3.0
+
+watchdog:
+  max_age_sec: 0.3
+  expected_rate_hz: 20.0
+  loss_window_sec: 2.0
+  max_loss_fraction: 0.8
+  check_period_sec: 0.01
+  recovery: stop
+
+expect:
+  no_violation_before_fault: true
+
+  fault:
+    observable: true
+    within_sec: 1.5
+
+  watchdog:
+    violation: message_age_exceeded
+    within_sec: 0.8
+
+  recovery:
+    action: stop
+    command_within_sec: 0.1
+    observed_within_sec: 0.3
+
+  robot:
+    linear_velocity_below_mps: 0.01
+    angular_velocity_below_rad_s: 0.01
+    within_sec: 1.0
+    hold_sec: 0.25

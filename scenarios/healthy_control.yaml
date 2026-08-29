@@ -1,0 +1,38 @@
+schema_version: 1
+name: healthy_control
+
+system:
+  input_topic: /odom_raw
+  output_topic: /odom
+  message_type: nav_msgs/msg/Odometry
+  command_topic: /cmd_vel
+  robot:
+    publish_rate_hz: 20.0
+    initial_linear_velocity_mps: 0.5
+    initial_angular_velocity_rad_s: 0.0
+
+experiment:
+  seed: 3
+  readiness_timeout_sec: 10.0
+  healthy_baseline_sec: 2.0
+  observation_after_activation_sec: 3.0
+
+fault:
+  type: none
+  parameters: {}
+  duration_sec: 0
+
+watchdog:
+  max_age_sec: 0.3
+  expected_rate_hz: 20.0
+  loss_window_sec: 2.0
+  max_loss_fraction: 0.8
+  check_period_sec: 0.01
+  recovery: stop
+
+expect:
+  no_violation_before_fault: true
+  fault: null
+  watchdog: null
+  recovery: null
+  robot: null
