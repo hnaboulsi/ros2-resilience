@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  unit:
+    name: Unit tests + lint (no ROS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dev dependencies
+        run: python3 -m pip install --quiet pyyaml "pytest>=8,<10" "ruff>=0.9,<1"
+      - name: Ruff check
+        run: python3 -m ruff check .
+      - name: Ruff format check
+        run: python3 -m ruff format --check .
+      - name: Unit tests (184 tests, pure Python, no ROS)
+        run: python3 -m pytest tests/unit -q
+
+  integration:
+    name: Real ROS 2 Jazzy build + integration tests
+    runs-on: ubuntu-latest
+    container:
+      image: ros:jazzy-ros-base-noble
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: src/ros2_resilience
+      - name: Install test dependencies
+        run: |
+          apt-get update
+          apt-get install --yes --no-install-recommends python3-pip
+          python3 -m pip install --break-system-packages --no-cache-dir "ruff==0.16.6"
+      - name: colcon build
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          colcon build --symlink-install --packages-select ros2_resilience
+      - name: Unit tests
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          source install/setup.bash
+          cd src/ros2_resilience
+          python3 -m pytest tests/unit -q
+      - name: Real end-to-end scenario trials
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          source install/setup.bash
+          cd src/ros2_resilience
+          python3 -m pytest tests/integration/test_scenarios_end_to_end.py -q
+      - name: Multi-process launch_testing
+        shell: bash
+        run: |
+          source /opt/ros/jazzy/setup.bash
+          source install/setup.bash
+          cd src/ros2_resilience
+          launch_test tests/integration/test_launch_multiprocess.py
