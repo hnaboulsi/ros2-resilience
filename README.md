@@ -2,6 +2,8 @@
 
 Closed-loop ROS 2 regression harness that injects communication faults, checks independent evidence, and fails when recovery misses explicit deadlines.
 
+![ROS 2 resilience contract](media/architecture.svg)
+
 ## Why I Built It
 
 Fault injection alone is not validation. I wanted each trial to define what a handled fault means, observe the effect through an independent stream, and produce a machine-checkable PASS or FAIL rather than trusting a component's self-report.
