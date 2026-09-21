@@ -1,4 +1,4 @@
-# ros2_resilience
+# ROS 2 Resilience Harness
 
 A closed-loop resilience regression harness for ROS 2. It answers one
 specific question, reproducibly: **when a communication fault is injected
@@ -25,7 +25,7 @@ hold**, and a **healthy control** (no fault, proving the harness doesn't cry
 wolf). Every one of them runs against a real ROS 2 Jazzy graph — real nodes,
 real topics, real DDS message passing — not a simulation of the pipeline.
 
-## Why this exists
+## What I Built
 
 ROS 2 already has fault-injection and fuzzing tools. This project's
 contribution is narrower and more specific: a **closed-loop regression
@@ -36,7 +36,7 @@ published *and separately observed*, how long the robot must stay stopped),
 then runs the real system and produces a versioned, machine-checkable PASS
 or FAIL with the measured evidence attached.
 
-## Architecture
+## How It Works
 
 The package is split so that the interesting logic is pure, deterministic,
 and fast to test — ROS is an adapter around it, not a dependency of it.
@@ -67,10 +67,9 @@ watchdog's own claim of publishing a recovery command is checked against
 the robot's independently observed `/cmd_vel` traffic — no component
 grades its own homework.
 
-## What's a deliberate Phase-1 simplification
+## Known Limitations
 
-Being upfront about scope, since a resilience-testing tool that oversells
-its own guarantees would be a bad look:
+The current scope is deliberately narrow:
 
 - **Trial isolation is graph-level, not process-level.** Each trial gets a
   fresh `rclpy.Context`, fresh nodes, and namespaced topics, but all trials
@@ -104,7 +103,7 @@ tests/integration/         real ROS 2 tests: full trials end to end, plus a
                            watchdog as three separate OS processes
 ```
 
-## Quickstart
+## Running It
 
 Everything here targets ROS 2 Jazzy on Ubuntu 24.04. The stock
 `ros:jazzy-ros-base-noble` image already contains everything the build and
@@ -146,7 +145,7 @@ ros2 run ros2_resilience run_scenario \
 behavioral regression, and `2` on a configuration or infrastructure error —
 so it composes directly into CI as a pass/fail gate.
 
-## Example: a real measured result
+## Demo / Results
 
 This is actual output from `dropout_burst.yaml` (80% drop probability, real
 watchdog, real recovery), not a hand-written example:
@@ -167,7 +166,7 @@ watchdog's actual `/cmd_vel` publish call (while leaving its self-reported
 and `robot_stopped` — because those two assertions are graded from the
 robot's own independent observation, not the watchdog's word for it.
 
-## Resilience-contract YAML
+## Scenario Contract
 
 ```yaml
 schema_version: 1
